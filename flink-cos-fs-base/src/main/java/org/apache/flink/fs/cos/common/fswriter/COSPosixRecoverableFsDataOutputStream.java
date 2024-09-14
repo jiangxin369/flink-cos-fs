@@ -43,13 +43,14 @@ import java.lang.reflect.Modifier;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /**
- * An implementation of the {@link RecoverableFsDataOutputStream} for Hadoop's
- * file system abstraction.
+ * An implementation of the {@link RecoverableFsDataOutputStream} for Hadoop's file system
+ * abstraction.
  */
 @Internal
 class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStream {
 
-    private static final Logger LOG = LoggerFactory.getLogger(COSPosixRecoverableFsDataOutputStream.class);
+    private static final Logger LOG =
+            LoggerFactory.getLogger(COSPosixRecoverableFsDataOutputStream.class);
 
     private static Method truncateHandle;
 
@@ -61,12 +62,12 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
 
     private final FSDataOutputStream out;
 
-    COSPosixRecoverableFsDataOutputStream(
-            FileSystem fs,
-            Path targetFile,
-            Path tempFile) throws IOException {
-        LOG.debug("cos merge recoverable fs data output stream " +
-                "temp file recover way trigger, file: {}", tempFile.toString());
+    COSPosixRecoverableFsDataOutputStream(FileSystem fs, Path targetFile, Path tempFile)
+            throws IOException {
+        LOG.debug(
+                "cos merge recoverable fs data output stream "
+                        + "temp file recover way trigger, file: {}",
+                tempFile.toString());
 
         ensureTruncateInitialized();
 
@@ -76,16 +77,18 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
         this.out = fs.create(tempFile);
     }
 
-    COSPosixRecoverableFsDataOutputStream(
-            FileSystem fs,
-            COSPosixRecoverable recoverable) throws IOException {
+    COSPosixRecoverableFsDataOutputStream(FileSystem fs, COSPosixRecoverable recoverable)
+            throws IOException {
 
         ensureTruncateInitialized();
         this.fs = checkNotNull(fs);
         this.targetFile = checkNotNull(recoverable.targetFile());
         this.tempFile = checkNotNull(recoverable.tempFile());
 
-        LOG.debug("cos merge recover process, temp:{}, recover:{}", tempFile.toString(), recoverable.toString());
+        LOG.debug(
+                "cos merge recover process, temp:{}, recover:{}",
+                tempFile.toString(),
+                recoverable.toString());
 
         safelyTruncateFile(fs, tempFile, recoverable);
 
@@ -96,8 +99,14 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
         long pos = out.getPos();
         if (pos != recoverable.offset()) {
             IOUtils.closeQuietly(out);
-            throw new IOException("Truncate failed: " + tempFile +
-                    " (requested=" + recoverable.offset() + " ,size=" + pos + ')');
+            throw new IOException(
+                    "Truncate failed: "
+                            + tempFile
+                            + " (requested="
+                            + recoverable.offset()
+                            + " ,size="
+                            + pos
+                            + ')');
         }
     }
 
@@ -131,8 +140,11 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
     @Override
     public ResumeRecoverable persist() throws IOException {
         sync();
-        LOG.debug("cos merge persist target:{}, temp:{}, pos:{}", targetFile.toString(),
-                tempFile.toString(), getPos());
+        LOG.debug(
+                "cos merge persist target:{}, temp:{}, pos:{}",
+                targetFile.toString(),
+                tempFile.toString(),
+                getPos());
         return new COSPosixRecoverable(targetFile, tempFile, getPos());
     }
 
@@ -140,10 +152,13 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
     public Committer closeForCommit() throws IOException {
         final long pos = getPos();
         close();
-        LOG.debug("cos merge close for commit target:{}, temp:{}, pos:{}", targetFile.toString(),
-                tempFile.toString(), pos);
-        return new COSPosixRecoverableFsDataOutputStream.COSMergeCommitter(fs,
-                new COSPosixRecoverable(targetFile, tempFile, pos));
+        LOG.debug(
+                "cos merge close for commit target:{}, temp:{}, pos:{}",
+                targetFile.toString(),
+                tempFile.toString(),
+                pos);
+        return new COSPosixRecoverableFsDataOutputStream.COSMergeCommitter(
+                fs, new COSPosixRecoverable(targetFile, tempFile, pos));
     }
 
     @Override
@@ -159,9 +174,8 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
     // ------------------------------------------------------------------------
 
     private static void safelyTruncateFile(
-            final FileSystem fileSystem,
-            final Path path,
-            final COSPosixRecoverable recoverable) throws IOException {
+            final FileSystem fileSystem, final Path path, final COSPosixRecoverable recoverable)
+            throws IOException {
 
         ensureTruncateInitialized();
 
@@ -173,7 +187,10 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
         // truncate back and append
         boolean truncated;
         try {
-            LOG.debug("cos merge safely truncate file path:{}, offset:{}", path.toString(), recoverable.offset());
+            LOG.debug(
+                    "cos merge safely truncate file path:{}, offset:{}",
+                    path.toString(),
+                    recoverable.offset());
             truncated = truncate(fileSystem, path, recoverable.offset());
         } catch (Exception e) {
             throw new IOException("Problem while truncating file: " + path, e);
@@ -186,33 +203,32 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
         Method truncateMethod;
         try {
             truncateMethod = FileSystem.class.getMethod("truncate", Path.class, long.class);
-        }
-        catch (NoSuchMethodException e) {
-            throw new FlinkRuntimeException("Could not find a public truncate method on the Hadoop File System.");
+        } catch (NoSuchMethodException e) {
+            throw new FlinkRuntimeException(
+                    "Could not find a public truncate method on the Hadoop File System.");
         }
 
         if (!Modifier.isPublic(truncateMethod.getModifiers())) {
-            throw new FlinkRuntimeException("Could not find a public truncate method on the Hadoop File System.");
+            throw new FlinkRuntimeException(
+                    "Could not find a public truncate method on the Hadoop File System.");
         }
         LOG.debug("ensure truncate initialized is ok");
         truncateHandle = truncateMethod;
     }
 
-    private static boolean truncate(final FileSystem hadoopFs, final Path file, final long length) throws IOException {
+    private static boolean truncate(final FileSystem hadoopFs, final Path file, final long length)
+            throws IOException {
         if (truncateHandle != null) {
             try {
                 return (Boolean) truncateHandle.invoke(hadoopFs, file, length);
-            }
-            catch (InvocationTargetException e) {
+            } catch (InvocationTargetException e) {
                 ExceptionUtils.rethrowIOException(e.getTargetException());
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 throw new IOException(
-                        "Truncation of file failed because of access/linking problems with Hadoop's truncate call. " +
-                                "This is most likely a dependency conflict or class loading problem.");
+                        "Truncation of file failed because of access/linking problems with Hadoop's truncate call. "
+                                + "This is most likely a dependency conflict or class loading problem.");
             }
-        }
-        else {
+        } else {
             throw new IllegalStateException("Truncation handle has not been initialized");
         }
         return false;
@@ -223,9 +239,9 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
     // ------------------------------------------------------------------------
 
     /**
-     * Implementation of a committer for the Hadoop File System abstraction.
-     * This implementation commits by renaming the temp file to the final file path.
-     * The temp file is truncated before renaming in case there is trailing garbage data.
+     * Implementation of a committer for the Hadoop File System abstraction. This implementation
+     * commits by renaming the temp file to the final file path. The temp file is truncated before
+     * renaming in case there is trailing garbage data.
      */
     static class COSMergeCommitter implements Committer {
         private static final Logger LOG = LoggerFactory.getLogger(COSMergeCommitter.class);
@@ -248,9 +264,11 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
             final FileStatus srcStatus;
             try {
                 srcStatus = fs.getFileStatus(src);
-            }
-            catch (IOException e) {
-                LOG.info("cos merge output stream commit failed, src not exist {}, {}", src.toString(), dest.toString());
+            } catch (IOException e) {
+                LOG.info(
+                        "cos merge output stream commit failed, src not exist {}, {}",
+                        src.toString(),
+                        dest.toString());
                 throw new IOException("Cannot clean commit: Staging file does not exist.");
             }
 
@@ -263,9 +281,9 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
             try {
                 LOG.info("cos merge output stream commit {}, {}", src.toString(), dest.toString());
                 fs.rename(src, dest);
-            }
-            catch (IOException e) {
-                throw new IOException("Committing file by rename failed: " + src + " to " + dest, e);
+            } catch (IOException e) {
+                throw new IOException(
+                        "Committing file by rename failed: " + src + " to " + dest, e);
             }
         }
 
@@ -279,33 +297,36 @@ class COSPosixRecoverableFsDataOutputStream extends RecoverableFsDataOutputStrea
             FileStatus srcStatus = null;
             try {
                 srcStatus = fs.getFileStatus(src);
-            }
-            catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 // status remains null
-            }
-            catch (IOException e) {
-                throw new IOException("Committing during recovery failed: Could not access status of source file.");
+            } catch (IOException e) {
+                throw new IOException(
+                        "Committing during recovery failed: Could not access status of source file.");
             }
 
             if (srcStatus != null) {
                 if (srcStatus.getLen() > expectedLength) {
                     // can happen if we go from persist to recovering for commit directly
                     // truncate the trailing junk away
-                    LOG.info("cos merge commit after recovery process, src:{}, recover:{}",
-                            src.toString(), recoverable.toString());
+                    LOG.info(
+                            "cos merge commit after recovery process, src:{}, recover:{}",
+                            src.toString(),
+                            recoverable.toString());
                     safelyTruncateFile(fs, src, recoverable);
                 }
 
                 // rename to final location (if it exists, overwrite it)
                 try {
-                    LOG.info("cos merge output stream commit after recovery {}, {}", src.toString(), dest.toString());
+                    LOG.info(
+                            "cos merge output stream commit after recovery {}, {}",
+                            src.toString(),
+                            dest.toString());
                     fs.rename(src, dest);
+                } catch (IOException e) {
+                    throw new IOException(
+                            "Committing file by rename failed: " + src + " to " + dest, e);
                 }
-                catch (IOException e) {
-                    throw new IOException("Committing file by rename failed: " + src + " to " + dest, e);
-                }
-            }
-            else if (!fs.exists(dest)) {
+            } else if (!fs.exists(dest)) {
                 // neither exists - that can be a sign of
                 //   - (1) a serious problem (file system loss of data)
                 //   - (2) a recovery of a savepoint that is some time old and the users

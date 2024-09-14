@@ -31,14 +31,11 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Simple serializer for the {@link COSPosixRecoverable}.
- */
+/** Simple serializer for the {@link COSPosixRecoverable}. */
 @Internal
 class COSPosixRecoverableSerializer implements SimpleVersionedSerializer<COSPosixRecoverable> {
 
-    static final COSPosixRecoverableSerializer INSTANCE =
-            new COSPosixRecoverableSerializer();
+    static final COSPosixRecoverableSerializer INSTANCE = new COSPosixRecoverableSerializer();
 
     private static final Logger LOG = LoggerFactory.getLogger(COSPosixRecoverableSerializer.class);
 
@@ -46,9 +43,7 @@ class COSPosixRecoverableSerializer implements SimpleVersionedSerializer<COSPosi
 
     private static final int MAGIC_NUMBER = 0xd7436c5e;
 
-    /**
-     * Do not instantiate, use reusable {@link #INSTANCE} instead.
-     */
+    /** Do not instantiate, use reusable {@link #INSTANCE} instead. */
     private COSPosixRecoverableSerializer() {}
 
     @Override
@@ -58,8 +53,11 @@ class COSPosixRecoverableSerializer implements SimpleVersionedSerializer<COSPosi
 
     @Override
     public byte[] serialize(COSPosixRecoverable obj) throws IOException {
-        LOG.debug("cos merge serialize {}, {}, {}", obj.targetFile().toString(),
-                obj.tempFile().toString(), obj.offset());
+        LOG.debug(
+                "cos merge serialize {}, {}, {}",
+                obj.targetFile().toString(),
+                obj.tempFile().toString(),
+                obj.offset());
         final byte[] targetFileBytes = obj.targetFile().toString().getBytes(CHARSET);
         final byte[] tempFileBytes = obj.tempFile().toString().getBytes(CHARSET);
         final byte[] targetBytes = new byte[20 + targetFileBytes.length + tempFileBytes.length];
@@ -104,6 +102,5 @@ class COSPosixRecoverableSerializer implements SimpleVersionedSerializer<COSPosi
         final String tempPath = new String(tempFileBytes, CHARSET);
 
         return new COSPosixRecoverable(new Path(targetPath), new Path(tempPath), offset);
-
     }
 }

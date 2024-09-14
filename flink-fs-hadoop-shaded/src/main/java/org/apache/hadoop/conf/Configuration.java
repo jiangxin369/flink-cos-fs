@@ -1863,8 +1863,7 @@ public class Configuration implements Iterable<Entry<String, String>>, Writable 
             public void remove() {
                 throw new UnsupportedOperationException();
             }
-        }
-        ;
+        };
 
         List<Range> ranges = new ArrayList<Range>();
 
@@ -1923,9 +1922,7 @@ public class Configuration implements Iterable<Entry<String, String>>, Writable 
             return false;
         }
 
-        /**
-         * @return true if there are no values in this range, else false.
-         */
+        /** @return true if there are no values in this range, else false. */
         public boolean isEmpty() {
             return ranges == null || ranges.isEmpty();
         }

@@ -18,10 +18,13 @@
 
 package org.apache.flink.fs.coshadoop;
 
-/**
- * 用来定义一些需要排除在 shade 以外的常量字符串.
- */
+/** 用来定义一些需要排除在 shade 以外的常量字符串. */
 public final class Constants {
-  public static final String SHADING_VALUE_PREFIX = (new StringBuilder())
-      .append("org.").append("apache.").append("hadoop.").append("fs").toString();
+    public static final String SHADING_VALUE_PREFIX =
+            (new StringBuilder())
+                    .append("org.")
+                    .append("apache.")
+                    .append("hadoop.")
+                    .append("fs")
+                    .toString();
 }

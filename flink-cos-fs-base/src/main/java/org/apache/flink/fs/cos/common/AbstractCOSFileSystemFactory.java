@@ -108,12 +108,15 @@ public abstract class AbstractCOSFileSystemFactory implements FileSystemFactory 
             final COSAccessHelper cosAccessHelper =
                     getCosAccessHelper(((CosFileSystem) fs).getStore());
 
-            // after hadoop cos fix the setting change to get flag from the cos access helper, avoid head bucket twice.
+            // after hadoop cos fix the setting change to get flag from the cos access helper, avoid
+            // head bucket twice.
             // boolean isPosixBucket = cosAccessHelper.isPosixBucket();
-            boolean isPosixBucket = ((CosFileSystem) fs).getStore().headBucket(bucket).isMergeBucket();
+            boolean isPosixBucket =
+                    ((CosFileSystem) fs).getStore().headBucket(bucket).isMergeBucket();
             boolean isPosixProcess = false;
 
-            // according to the head bucket result and implement config to judge which writer to use.
+            // according to the head bucket result and implement config to judge which writer to
+            // use.
             String bucketImpl = "";
             if (isPosixBucket) {
                 bucketImpl = hadoopConfiguration.get(CosNConfigKeys.COSN_POSIX_BUCKET_FS_IMPL);
@@ -127,10 +130,14 @@ public abstract class AbstractCOSFileSystemFactory implements FileSystemFactory 
                 }
             }
 
-            LOG.info("Creating the Flink cos file system, " +
-                    "create posix process recover writer: {}, " +
-                            "bucket {} is posix bucket: {}, bucket impl {}.",
-                    isPosixProcess, bucket, isPosixBucket, bucketImpl);
+            LOG.info(
+                    "Creating the Flink cos file system, "
+                            + "create posix process recover writer: {}, "
+                            + "bucket {} is posix bucket: {}, bucket impl {}.",
+                    isPosixProcess,
+                    bucket,
+                    isPosixBucket,
+                    bucketImpl);
 
             return new FlinkCOSFileSystem(
                     fs,

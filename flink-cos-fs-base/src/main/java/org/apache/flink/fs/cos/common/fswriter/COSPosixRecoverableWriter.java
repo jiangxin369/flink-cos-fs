@@ -35,10 +35,7 @@ import java.util.UUID;
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
-/**
- * An implementation of the {@link RecoverableWriter} for
- * Hadoop's file system abstraction.
- */
+/** An implementation of the {@link RecoverableWriter} for Hadoop's file system abstraction. */
 @Internal
 public class COSPosixRecoverableWriter implements RecoverableWriter {
 
@@ -49,6 +46,7 @@ public class COSPosixRecoverableWriter implements RecoverableWriter {
 
     /**
      * Creates a new Recoverable writer.
+     *
      * @param fs The Hadoop file system on which the writer operates.
      */
     public COSPosixRecoverableWriter(org.apache.hadoop.fs.FileSystem fs) {
@@ -73,10 +71,10 @@ public class COSPosixRecoverableWriter implements RecoverableWriter {
         if (recoverable instanceof COSPosixRecoverable) {
             LOG.debug("cos merge recoverable writer to recover");
             return new COSPosixRecoverableFsDataOutputStream(fs, (COSPosixRecoverable) recoverable);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(
-                    "cos merge File System cannot recover a recoverable for another file system: " + recoverable);
+                    "cos merge File System cannot recover a recoverable for another file system: "
+                            + recoverable);
         }
     }
 
@@ -91,32 +89,35 @@ public class COSPosixRecoverableWriter implements RecoverableWriter {
     }
 
     @Override
-    public RecoverableFsDataOutputStream.Committer recoverForCommit(CommitRecoverable recoverable) throws IOException {
-/*
-        if (recoverable instanceof COSMergeRecoverable) {
-        	// final COSMergeRecoverable cosMergeRecoverable = cas
-        	final COSMergeRecoverableFsDataOutputStream recovered = (COSMergeRecoverableFsDataOutputStream) recover((COSMergeRecoverable)recoverable);
-        	return recovered.closeForCommit();
-        } else {
-        	throw new IllegalArgumentException(
-        		"cos merge File System  cannot recover a recoverable for another file system: " + recoverable);
-        }
-*/
+    public RecoverableFsDataOutputStream.Committer recoverForCommit(CommitRecoverable recoverable)
+            throws IOException {
+        /*
+                if (recoverable instanceof COSMergeRecoverable) {
+                	// final COSMergeRecoverable cosMergeRecoverable = cas
+                	final COSMergeRecoverableFsDataOutputStream recovered = (COSMergeRecoverableFsDataOutputStream) recover((COSMergeRecoverable)recoverable);
+                	return recovered.closeForCommit();
+                } else {
+                	throw new IllegalArgumentException(
+                		"cos merge File System  cannot recover a recoverable for another file system: " + recoverable);
+                }
+        */
         if (recoverable instanceof COSPosixRecoverable) {
             LOG.debug("cos merge recover for commit");
-            return new COSPosixRecoverableFsDataOutputStream.COSMergeCommitter(fs, (COSPosixRecoverable) recoverable);
-        }
-        else {
+            return new COSPosixRecoverableFsDataOutputStream.COSMergeCommitter(
+                    fs, (COSPosixRecoverable) recoverable);
+        } else {
             throw new IllegalArgumentException(
-                    "cos merge File System  cannot recover a recoverable for another file system: " + recoverable);
+                    "cos merge File System  cannot recover a recoverable for another file system: "
+                            + recoverable);
         }
     }
 
     @Override
     public SimpleVersionedSerializer<CommitRecoverable> getCommitRecoverableSerializer() {
         @SuppressWarnings("unchecked")
-        SimpleVersionedSerializer<CommitRecoverable> typedSerializer = (SimpleVersionedSerializer<CommitRecoverable>)
-                (SimpleVersionedSerializer<?>) COSPosixRecoverableSerializer.INSTANCE;
+        SimpleVersionedSerializer<CommitRecoverable> typedSerializer =
+                (SimpleVersionedSerializer<CommitRecoverable>)
+                        (SimpleVersionedSerializer<?>) COSPosixRecoverableSerializer.INSTANCE;
         LOG.debug("cos merge get commit recoverable serializer");
 
         return typedSerializer;
@@ -125,8 +126,9 @@ public class COSPosixRecoverableWriter implements RecoverableWriter {
     @Override
     public SimpleVersionedSerializer<ResumeRecoverable> getResumeRecoverableSerializer() {
         @SuppressWarnings("unchecked")
-        SimpleVersionedSerializer<ResumeRecoverable> typedSerializer = (SimpleVersionedSerializer<ResumeRecoverable>)
-                (SimpleVersionedSerializer<?>) COSPosixRecoverableSerializer.INSTANCE;
+        SimpleVersionedSerializer<ResumeRecoverable> typedSerializer =
+                (SimpleVersionedSerializer<ResumeRecoverable>)
+                        (SimpleVersionedSerializer<?>) COSPosixRecoverableSerializer.INSTANCE;
         LOG.debug("cos merge get resume recoverable serializer");
 
         return typedSerializer;
@@ -140,8 +142,8 @@ public class COSPosixRecoverableWriter implements RecoverableWriter {
 
     @VisibleForTesting
     static org.apache.hadoop.fs.Path generateStagingTempFilePath(
-            org.apache.hadoop.fs.FileSystem fs,
-            org.apache.hadoop.fs.Path targetFile) throws IOException {
+            org.apache.hadoop.fs.FileSystem fs, org.apache.hadoop.fs.Path targetFile)
+            throws IOException {
 
         checkArgument(targetFile.isAbsolute(), "targetFile must be absolute");
 
@@ -151,8 +153,9 @@ public class COSPosixRecoverableWriter implements RecoverableWriter {
         checkArgument(parent != null, "targetFile must not be the root directory");
 
         while (true) {
-            org.apache.hadoop.fs.Path candidate = new org.apache.hadoop.fs.Path(
-                    parent, "." + name + ".inprogress." + UUID.randomUUID().toString());
+            org.apache.hadoop.fs.Path candidate =
+                    new org.apache.hadoop.fs.Path(
+                            parent, "." + name + ".inprogress." + UUID.randomUUID().toString());
             if (!fs.exists(candidate)) {
                 return candidate;
             }
