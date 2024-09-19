@@ -70,6 +70,7 @@ hs_err_pid*
 # .idea/modules
 # *.iml
 # *.ipr
+**/dependency-reduced-pom.xml
 
 # CMake
 cmake-build-*/

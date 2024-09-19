@@ -8,12 +8,13 @@
     <parent>
         <artifactId>flink-filesystems</artifactId>
         <groupId>org.apache.flink</groupId>
-        <version>1.10.0</version>
+        <version>1.19.1</version>
+        <relativePath>../flink/flink-filesystems/pom.xml</relativePath>
     </parent>
 
     <groupId>com.qcloud.cos</groupId>
     <artifactId>flink-cos-fs</artifactId>
-    <version>1.10.0-0.2.3</version>
+    <version>1.19.1-0.2.3</version>
     <name>Flink : FileSystems : COS FS</name>
     <description>
         This project aims to provide COS's implementation of the Flink file system interface,
@@ -66,7 +67,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <flink.version>1.10.0</flink.version>
+        <flink.version>1.19.1</flink.version>
         <fs.hadoopshaded.version>3.2.2</fs.hadoopshaded.version>
     </properties>
 

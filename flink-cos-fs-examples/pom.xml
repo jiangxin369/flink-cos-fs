@@ -5,7 +5,7 @@
     <parent>
         <artifactId>flink-cos-fs</artifactId>
         <groupId>com.qcloud.cos</groupId>
-        <version>1.10.0-0.2.3</version>
+        <version>1.19.1-0.2.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -32,7 +32,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-streaming-java_${scala.binary.version}</artifactId>
+            <artifactId>flink-streaming-java</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>
